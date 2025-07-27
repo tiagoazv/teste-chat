@@ -1,10 +1,22 @@
-export default function ChatHeader({ name }: { name: string }) {
+'use client';
+import { FC } from 'react';
+
+interface ChatHeaderProps {
+  name: string;
+  online: boolean;
+}
+
+const ChatHeader: FC<ChatHeaderProps> = ({ name, online }) => {
   return (
-    <div className="flex items-center gap-3 mb-4 border-b pb-3">
-      <div className="w-10 h-10 rounded-full bg-gray-300" />
-      <div className="text-lg font-semibold text-gray-800">
-        Chat com {name}
+    <div className="px-4 py-3 border-b bg-white flex justify-between items-center">
+      <div>
+        <div className="font-semibold text-gray-800">{name}</div>
+        <div className="text-sm text-gray-500">
+          {online ? 'Online' : 'Offline'}
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default ChatHeader;

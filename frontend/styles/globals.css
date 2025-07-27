@@ -13,7 +13,7 @@
 }
 
 body {
-  @apply bg-fixed bg-cover bg-center bg-no-repeat min-h-screen;
+  @apply bg-fixed bg-cover bg-center bg-no-repeat min-h-screen overflow-x-hidden;
   background-image: url('/background.png');
 }
 
