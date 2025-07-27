@@ -1,12 +1,20 @@
-import express from 'express';
+// src/routes/messageRoutes.js
+import { Router } from 'express';
 import passport from 'passport';
-import { sendMessage, getMessagesWithUser } from '../controllers/messageController.js';
+import Message from '../models/Message.js';
+import { authenticateJWT } from '../middleware/authMiddleware.js';
 
-const router = express.Router();
+const router = Router();
 
-router.use(passport.authenticate('jwt', { session: false }));
+router.get('/:id', authenticateJWT, async (req, res) => {
+  const messages = await Message.find({
+    $or: [
+      { from: req.user._id, to: req.params.id },
+      { from: req.params.id, to: req.user._id }
+    ]
+  }).sort({ createdAt: 1 });
 
-router.post('/', sendMessage); // enviar mensagem
-router.get('/:userId', getMessagesWithUser); // mensagens com usuário específico
+  res.json(messages);
+});
 
 export default router;

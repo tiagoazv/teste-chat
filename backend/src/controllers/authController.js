@@ -1,32 +1,38 @@
-import User from '../models/User.js';
+import passport from 'passport';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
+import User from '../models/User.js';
 
-dotenv.config();
+export async function register(req, res) {
+  const { name, email, password } = req.body;
 
-export const register = async (req, res) => {
-  const { name, username, password } = req.body;
   try {
-    const user = new User({ name, username, password });
-    await user.save();
-    res.status(201).json({ message: 'Usuário cadastrado com sucesso.' });
-  } catch (err) {
-    res.status(400).json({ message: 'Erro ao cadastrar usuário.', error: err.message });
-  }
-};
+    const userExists = await User.findOne({ email });
+    if (userExists) return res.status(400).json({ message: 'Email já registrado.' });
 
-export const login = async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const user = await User.findOne({ username });
-    if (!user || !(await user.comparePassword(password)))
-      return res.status(401).json({ message: 'Credenciais inválidas' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, email, password: hashedPassword });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    user.online = true;
-    await user.save();
-    res.json({ token, user: { id: user._id, name: user.name, username: user.username } });
+    res.status(201).json({ message: 'Usuário registrado com sucesso.' });
   } catch (err) {
-    res.status(500).json({ message: 'Erro interno no login.' });
+    res.status(500).json({ message: 'Erro ao registrar usuário.', error: err.message });
   }
-};
+}
+
+export function login(req, res, next) {
+  passport.authenticate('local', { session: false }, (err, user, info) => {
+    if (err) return next(err);
+    if (!user) return res.status(401).json({ message: info?.message || 'Credenciais inválidas.' });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    });
+  })(req, res, next);
+}
