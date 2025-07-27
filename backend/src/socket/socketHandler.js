@@ -5,14 +5,24 @@ import User from '../models/User.js';
 const onlineUsers = new Map();
 
 export function setupSocket(io) {
+  const emitOnlineUsers = () => {
+    const onlineIds = [...onlineUsers.keys()];
+    io.emit('updateOnlineUsers', onlineIds);
+  };
+
   io.on('connection', (socket) => {
     console.log('Novo usuário conectado:', socket.id);
 
     socket.on('register', async (userId) => {
+      if (!userId) return;
+
       onlineUsers.set(userId, socket.id);
       await User.findByIdAndUpdate(userId, { online: true });
-      io.emit('userStatusUpdate');
+
+      emitOnlineUsers();
+      socket.emit('updateOnlineUsers', [...onlineUsers.keys()]);
     });
+
 
     socket.on('sendMessage', async ({ from, to, content }) => {
       const message = await Message.create({ from, to, content });
@@ -22,7 +32,6 @@ export function setupSocket(io) {
         io.to(recipientSocketId).emit('receiveMessage', message);
       }
 
-      // Também envia para o remetente (útil se ele estiver com múltiplas abas)
       const senderSocketId = onlineUsers.get(from);
       if (senderSocketId && senderSocketId !== recipientSocketId) {
         io.to(senderSocketId).emit('receiveMessage', message);
@@ -30,15 +39,21 @@ export function setupSocket(io) {
     });
 
     socket.on('disconnect', async () => {
+      let disconnectedUserId = null;
+
       for (const [userId, socketId] of onlineUsers.entries()) {
         if (socketId === socket.id) {
+          disconnectedUserId = userId;
           onlineUsers.delete(userId);
-          await User.findByIdAndUpdate(userId, { online: false });
           break;
         }
       }
 
-      io.emit('userStatusUpdate');
+      if (disconnectedUserId) {
+        console.log(`Desconectando usuário ${disconnectedUserId}`);
+        await User.findByIdAndUpdate(disconnectedUserId, { online: false });
+        emitOnlineUsers();
+      }
     });
   });
 }

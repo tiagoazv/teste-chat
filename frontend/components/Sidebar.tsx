@@ -1,32 +1,64 @@
-import { FaUserCircle } from 'react-icons/fa'
+'use client';
+import { FC } from 'react';
+import { Socket } from 'socket.io-client';
+
+interface User {
+  _id: string;
+  name: string;
+}
 
 interface SidebarProps {
-  users: { _id: string; name: string; online: boolean }[];
-  selectedUser: any;
-  onSelectUser: (user: any) => void;
+  users: User[];
+  selectedUserId: string | null;
+  onSelect: (user: User) => void;
+  socket: Socket | null;
+  onlineUserIds: string[];
+  unreadUserIds: string[];
 }
 
-export default function Sidebar({ users, selectedUser, onSelectUser }: SidebarProps) {
+const Sidebar: FC<SidebarProps> = ({
+  users,
+  selectedUserId,
+  onSelect,
+  socket,
+  onlineUserIds,
+  unreadUserIds,
+}) => {
   return (
-    <div className="w-[250px] bg-white border-r p-4">
-      <h2 className="text-lg font-semibold mb-4">Usuários</h2>
-      <div className="space-y-2">
-        {users.map((user) => (
-          <div
-            key={user._id}
-            onClick={() => onSelectUser(user)}
-            className={`flex items-center p-2 rounded-lg cursor-pointer transition hover:bg-gray-100 ${
-              selectedUser?._id === user._id ? 'bg-gray-100' : ''
-            }`}
-          >
-            <span className="mr-2"><FaUserCircle size={24} /></span>
-            <span className="flex-1">{user.name}</span>
-            <span className={`text-sm ${user.online ? 'text-green-500' : 'text-gray-400'}`}>
-              {user.online ? '●' : '○'}
-            </span>
+    <div className="w-72 bg-white overflow-y-auto border-r">
+      {users.map((user) => (
+        <div
+          key={user._id}
+          className={`p-4 flex justify-between items-center cursor-pointer hover:bg-gray-100 ${
+            selectedUserId === user._id ? 'bg-gray-200' : ''
+          }`}
+          onClick={() => onSelect(user)}
+        >
+          <div>
+            <div className="flex items-center gap-2 font-medium text-gray-800 relative">
+              {user.name}
+              {unreadUserIds.includes(user._id) && (
+                <span className="relative w-2.5 h-2.5">
+                  <span className="absolute inset-0 rounded-full bg-red-400 opacity-75 animate-ping"></span>
+                  <span className="absolute inset-0 rounded-full bg-red-500"></span>
+                </span>
+              )}
+            </div>
+            <div className="text-sm text-gray-500">
+              {onlineUserIds.includes(user._id) ? 'Online' : 'Offline'}
+            </div>
           </div>
-        ))}
-      </div>
+          <div className="relative">
+            <span
+              className={`w-3 h-3 rounded-full block ${
+                onlineUserIds.includes(user._id) ? 'bg-green-500' : 'bg-gray-400'
+              }`}
+            />
+          </div>
+        </div>
+      ))}
     </div>
   );
-}
+};
+
+export default Sidebar;
