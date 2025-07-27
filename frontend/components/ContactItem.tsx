@@ -1,8 +1,7 @@
 import { ReactNode } from "react";
-import { User } from '../types/User';
 
 interface ContactItemProps {
-  user: User;
+  user: any;
   name: string;
   lastMessage: string;
   active?: boolean;
