@@ -1,23 +1,30 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-export default function useSocket(userId: string | null): Socket | null {
-  const socketRef = useRef<Socket | null>(null);
+export default function useSocket(userId: string | null, onOnlineUpdate: (ids: string[]) => void): Socket | null {
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     if (!userId) return;
 
-    const socket = io('http://localhost:5000');
-    socket.emit('register', userId);
-    socketRef.current = socket;
+    const socketInstance = io('http://localhost:5000', {
+      transports: ['websocket'],
+    });
+
+    socketInstance.on('connect', () => {
+      socketInstance.emit('register', userId);
+    });
+
+    socketInstance.on('updateOnlineUsers', onOnlineUpdate);
+
+    setSocket(socketInstance);
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      socketInstance.disconnect();
+      setSocket(null);
     };
   }, [userId]);
 
-  return socketRef.current;
+  return socket;
 }
- 

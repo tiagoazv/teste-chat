@@ -20,12 +20,13 @@ export default function LoginPage() {
 
     try {
       const res = await api.post('/auth/login', { email, password });
-      const { token, user: { id, name } } = res.data;
+      const { token, user: { id, name, userEmail } } = res.data;
 
       localStorage.setItem('token', token);
       localStorage.setItem('userId', id);
       localStorage.setItem('userName', name);
-      
+      localStorage.setItem('userEmail', userEmail);
+
       router.push('/chat');
     } catch {
       setErro('Email ou senha inválidos');
