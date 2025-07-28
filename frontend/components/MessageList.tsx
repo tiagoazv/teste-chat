@@ -1,5 +1,5 @@
 'use client';
-import { FC } from 'react';
+import { FC, useEffect, useRef } from 'react';
 
 interface Message {
   _id?: string;
@@ -44,6 +44,12 @@ const MessageList: FC<MessageListProps> = ({ messages, currentUserId }) => {
     return acc;
   }, {});
 
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+  }, [messages]);
+
   return (
     <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 bg-gray-50">
       {Object.entries(grouped).map(([day, msgs]) => (
@@ -58,7 +64,7 @@ const MessageList: FC<MessageListProps> = ({ messages, currentUserId }) => {
                   className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`px-4 py-2 rounded-lg shadow text-sm break-words ${
+                    className={`px-4 py-2 rounded-lg shadow text-sm break-all whitespace-pre-wrap ${
                       isOwn ? 'bg-blue-500 text-white' : 'bg-white text-gray-800'
                     }`}
                     style={{ maxWidth: '75%' }}
@@ -74,6 +80,7 @@ const MessageList: FC<MessageListProps> = ({ messages, currentUserId }) => {
           </div>
         </div>
       ))}
+      <div ref={bottomRef} />
     </div>
   );
 };

@@ -18,7 +18,9 @@ export default function ChatPage() {
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
   const [unreadUserIds, setUnreadUserIds] = useState<string[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [lastMessages, setLastMessages] = useState<{ [key: string]: string }>({});
 
+  // Inicializa socket
   useEffect(() => {
     if (!userId || socket) return;
 
@@ -32,6 +34,7 @@ export default function ChatPage() {
     };
   }, [userId]);
 
+  // Carrega dados do usuário e lista de usuários
   useEffect(() => {
     const token = localStorage.getItem('token');
     const id = localStorage.getItem('userId');
@@ -49,6 +52,7 @@ export default function ChatPage() {
       .catch(err => console.error('Erro ao buscar usuários:', err));
   }, []);
 
+  // Busca mensagens ao trocar usuário selecionado
   useEffect(() => {
     if (!selectedUser) return;
 
@@ -57,10 +61,47 @@ export default function ChatPage() {
       .catch(err => console.error('Erro ao buscar mensagens:', err));
   }, [selectedUser]);
 
+  // Busca últimas mensagens após carregar usuários
+  useEffect(() => {
+    if (!userId || users.length === 0) return;
+
+    const fetchLastMessages = async () => {
+      try {
+        const results = await Promise.all(
+          users.map(async (user) => {
+            const res = await api.get(`/messages/last/${user._id}`);
+            return { userId: user._id, content: res.data?.content || '' };
+          })
+        );
+
+        const map: Record<string, string> = {};
+        results.forEach(({ userId, content }) => {
+          map[userId] = content;
+        });
+
+        setLastMessages(map);
+      } catch (err) {
+        console.error('Erro ao buscar últimas mensagens:', err);
+      }
+    };
+
+    fetchLastMessages();
+  }, [users, userId]);
+
+  // Recebe mensagens por socket
   useEffect(() => {
     if (!socket || !userId) return;
 
     const handler = (msg: any) => {
+      const otherId = msg.from === userId ? msg.to : msg.from;
+
+      // Atualiza última mensagem
+      setLastMessages(prev => ({
+        ...prev,
+        [otherId]: msg.content,
+      }));
+
+      // Adiciona à conversa atual ou sinaliza como não lida
       if (
         (msg.from === selectedUser?._id && msg.to === userId) ||
         (msg.from === userId && msg.to === selectedUser?._id)
@@ -70,7 +111,7 @@ export default function ChatPage() {
         setUnreadUserIds(prev => prev.includes(msg.from) ? prev : [...prev, msg.from]);
       }
     };
-    
+
     const statusHandler = (ids: string[]) => setOnlineUserIds(ids);
 
     socket.on('receiveMessage', handler);
@@ -90,14 +131,13 @@ export default function ChatPage() {
   };
 
   const handleSelectUser = (user: any) => {
-    console.log('Usuário selecionado:', user); // Adicione este log
     setSelectedUser(user);
     setUnreadUserIds(prev => prev.filter(id => id !== user._id));
   };
 
   return (
-    <div className="h-screen w-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/background.jpg)' }}>
-      <div className="w-[70%] h-[90%] mx-auto mt-10 flex flex-col rounded-2xl shadow-lg overflow-hidden">
+   <div className="h-screen w-screen bg-cover bg-center bg-no-repeat flex items-center justify-center" style={{ backgroundImage: 'url(/background.jpg)' }}>
+      <div className="w-[70%] h-[90%] flex flex-col rounded-2xl shadow-lg overflow-hidden bg-white">
         <Header userName={userName} userEmail={userEmail} />
         <div className="flex flex-1 min-h-0">
           <Sidebar
@@ -107,6 +147,7 @@ export default function ChatPage() {
             socket={socket}
             onlineUserIds={onlineUserIds}
             unreadUserIds={unreadUserIds}
+            lastMessages={lastMessages}
           />
           <div className="flex flex-col flex-1">
             {selectedUser && (
@@ -127,4 +168,3 @@ export default function ChatPage() {
     </div>
   );
 }
-

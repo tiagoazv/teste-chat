@@ -1,6 +1,7 @@
 'use client';
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
+import api from '@services/api';
 
 interface User {
   _id: string;
@@ -14,6 +15,7 @@ interface SidebarProps {
   socket: Socket | null;
   onlineUserIds: string[];
   unreadUserIds: string[];
+  lastMessages: { [userId: string]: string };
 }
 
 const Sidebar: FC<SidebarProps> = ({
@@ -23,7 +25,14 @@ const Sidebar: FC<SidebarProps> = ({
   socket,
   onlineUserIds,
   unreadUserIds,
+  lastMessages,
 }) => {
+  const [localLastMessages, setLocalLastMessages] = useState(lastMessages);
+
+  useEffect(() => {
+    setLocalLastMessages(lastMessages);
+  }, [lastMessages]);
+
   return (
     <div className="w-72 bg-white overflow-y-auto border-r">
       {users.map((user) => (
@@ -34,7 +43,7 @@ const Sidebar: FC<SidebarProps> = ({
           }`}
           onClick={() => onSelect(user)}
         >
-          <div>
+          <div className="flex-1">
             <div className="flex items-center gap-2 font-medium text-gray-800 relative">
               {user.name}
               {unreadUserIds.includes(user._id) && (
@@ -44,11 +53,11 @@ const Sidebar: FC<SidebarProps> = ({
                 </span>
               )}
             </div>
-            <div className="text-sm text-gray-500">
-              {onlineUserIds.includes(user._id) ? 'Online' : 'Offline'}
+            <div className="text-sm text-gray-500 truncate max-w-[200px]">
+              {localLastMessages[user._id] || 'Clique para iniciar uma conversa'}
             </div>
           </div>
-          <div className="relative">
+          <div className="ml-2">
             <span
               className={`w-3 h-3 rounded-full block ${
                 onlineUserIds.includes(user._id) ? 'bg-green-500' : 'bg-gray-400'
