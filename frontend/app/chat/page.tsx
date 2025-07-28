@@ -70,7 +70,7 @@ export default function ChatPage() {
         setUnreadUserIds(prev => prev.includes(msg.from) ? prev : [...prev, msg.from]);
       }
     };
-
+    
     const statusHandler = (ids: string[]) => setOnlineUserIds(ids);
 
     socket.on('receiveMessage', handler);
@@ -90,6 +90,7 @@ export default function ChatPage() {
   };
 
   const handleSelectUser = (user: any) => {
+    console.log('Usuário selecionado:', user); // Adicione este log
     setSelectedUser(user);
     setUnreadUserIds(prev => prev.filter(id => id !== user._id));
   };
@@ -98,7 +99,7 @@ export default function ChatPage() {
     <div className="h-screen w-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/background.jpg)' }}>
       <div className="w-[70%] h-[90%] mx-auto mt-10 flex flex-col rounded-2xl shadow-lg overflow-hidden">
         <Header userName={userName} userEmail={userEmail} />
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-h-0">
           <Sidebar
             users={users}
             selectedUserId={selectedUser?._id || null}
@@ -108,9 +109,18 @@ export default function ChatPage() {
             unreadUserIds={unreadUserIds}
           />
           <div className="flex flex-col flex-1">
-            {selectedUser && <ChatHeader name={selectedUser.name} online={onlineUserIds.includes(selectedUser._id)} />}
-            <MessageList messages={messages} currentUserId={userId || ''} />
-            <MessageInput onSend={handleSend} />
+            {selectedUser && (
+              <ChatHeader
+                name={selectedUser.name}
+                online={onlineUserIds.includes(selectedUser._id)}
+              />
+            )}
+
+            <div className="flex-1 overflow-y-auto px-4 py-4 bg-gray-50">
+              <MessageList messages={messages} currentUserId={userId || ''} />
+            </div>
+
+            {selectedUser && <MessageInput onSend={handleSend} />}
           </div>
         </div>
       </div>

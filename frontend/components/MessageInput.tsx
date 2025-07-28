@@ -2,14 +2,11 @@
 import { FC, useState } from 'react';
 
 interface MessageInputProps {
-  value: string;
-  onChange: (text: string) => void;
   onSend: (text: string) => void;
-  disabled?: boolean;
 }
 
-const MessageInput: FC<MessageInputProps> = ({ value, onChange, onSend, disabled }) => {
-  const [text, setText] = useState(value);
+const MessageInput: FC<MessageInputProps> = ({ onSend }) => {
+  const [text, setText] = useState('');
 
   const handleSend = () => {
     if (!text.trim()) return;
