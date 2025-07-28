@@ -49,7 +49,7 @@ export default function Header({ userName, userEmail }: HeaderProps) {
                 <span className="text-gray-800 font-medium">{userName}</span>
                 <span className="text-gray-600 text-xs">{userEmail}</span>
             </div>
-            <FaUserCircle size={40} className="text-gray-400" />
+            <FaUserCircle size={40} />
         </button>
 
 

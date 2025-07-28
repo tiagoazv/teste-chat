@@ -157,7 +157,7 @@ export default function ChatPage() {
               />
             )}
 
-            <div className="flex-1 overflow-y-auto px-4 py-4 bg-gray-50">
+            <div className="flex-1 overflow-y-auto px-4 py-4 bg-gray-100">
               <MessageList messages={messages} currentUserId={userId || ''} />
             </div>
 

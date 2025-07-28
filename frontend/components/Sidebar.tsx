@@ -2,6 +2,7 @@
 import { FC, useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import api from '@services/api';
+import { FaUserCircle } from 'react-icons/fa';
 
 interface User {
   _id: string;
@@ -34,29 +35,35 @@ const Sidebar: FC<SidebarProps> = ({
   }, [lastMessages]);
 
   return (
-    <div className="w-72 bg-white overflow-y-auto border-r">
+    <div className="w-72 bg-white overflow-y-auto p-2">
       {users.map((user) => (
         <div
           key={user._id}
-          className={`p-4 flex justify-between items-center cursor-pointer hover:bg-gray-100 ${
-            selectedUserId === user._id ? 'bg-gray-200' : ''
+          className={`p-3 flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-xl mb-2 ${
+            selectedUserId === user._id ? 'bg-blue-100' : ''
           }`}
           onClick={() => onSelect(user)}
         >
           <div className="flex-1">
-            <div className="flex items-center gap-2 font-medium text-gray-800 relative">
-              {user.name}
-              {unreadUserIds.includes(user._id) && (
-                <span className="relative w-2.5 h-2.5">
-                  <span className="absolute inset-0 rounded-full bg-red-400 opacity-75 animate-ping"></span>
-                  <span className="absolute inset-0 rounded-full bg-red-500"></span>
-                </span>
-              )}
-            </div>
-            <div className="text-sm text-gray-500 truncate max-w-[200px]">
-              {localLastMessages[user._id] || 'Clique para iniciar uma conversa'}
+            <div className="flex items-center gap-3">
+              <FaUserCircle size={40}/>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 font-medium text-gray-800 relative">
+                  {user.name}
+                  {unreadUserIds.includes(user._id) && (
+                    <span className="relative w-2.5 h-2.5">
+                      <span className="absolute inset-0 rounded-full bg-red-400 opacity-75 animate-ping"></span>
+                      <span className="absolute inset-0 rounded-full bg-red-500"></span>
+                    </span>
+                  )}
+                </div>
+                <div className="text-sm text-gray-500 truncate max-w-[150px]">
+                  {localLastMessages[user._id] || 'Clique para iniciar uma conversa'}
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="ml-2">
             <span
               className={`w-3 h-3 rounded-full block ${
@@ -68,6 +75,6 @@ const Sidebar: FC<SidebarProps> = ({
       ))}
     </div>
   );
-};
+} 
 
 export default Sidebar;

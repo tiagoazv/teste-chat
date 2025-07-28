@@ -51,7 +51,7 @@ const MessageList: FC<MessageListProps> = ({ messages, currentUserId }) => {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 bg-gray-50">
+    <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 bg-gray-100">
       {Object.entries(grouped).map(([day, msgs]) => (
         <div key={day}>
           <div className="text-center text-sm text-gray-500 my-2">{day}</div>
