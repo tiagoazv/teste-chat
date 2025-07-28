@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaUserCircle } from 'react-icons/fa';
 import { FiLogOut } from 'react-icons/fi';
+import api from '../services/api';
 
 interface HeaderProps {
   userName: string;
@@ -15,13 +16,15 @@ export default function Header({ userName, userEmail }: HeaderProps) {
   const router = useRouter();
   const dropdownRef = useRef(null);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+      router.push('/login');
+    } catch (error) {
+      console.error('Erro ao deslogar:', error);
+    }
   };
 
-  // Fecha o dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !(dropdownRef.current as any).contains(e.target)) {

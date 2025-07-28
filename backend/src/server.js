@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import { setupSocket } from './socket/socketHandler.js';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 connectDB();
@@ -23,9 +24,14 @@ const io = new Server(server, {
 
 setupSocket(io);
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true         
+}));
+
 app.use(express.json());
 app.use(passport.initialize());
+app.use(cookieParser());
 
 // Rotas da API
 app.use('/api/auth', authRoutes);
