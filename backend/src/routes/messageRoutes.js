@@ -1,4 +1,3 @@
-// src/routes/messageRoutes.js
 import { Router } from 'express';
 import { authenticateJWT } from '../middleware/authMiddleware.js';
 import {

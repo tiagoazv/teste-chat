@@ -9,6 +9,7 @@ export default function useSocket(userId: string | null, onOnlineUpdate: (ids: s
     if (!userId) return;
 
     const socketInstance = io('http://localhost:5000', {
+      withCredentials: true,
       transports: ['websocket'],
     });
 
